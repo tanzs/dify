@@ -8,6 +8,7 @@ annotation_fields = {
     "answer": fields.Raw(attribute="content"),
     "hit_count": fields.Integer,
     "created_at": TimestampField,
+    "updated_at": TimestampField,
     # 'account': fields.Nested(simple_account_fields, allow_null=True)
 }
 

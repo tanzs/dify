@@ -1167,3 +1167,82 @@ import { Row, Col, Properties, Property, Heading, SubProperty } from '../md.tsx'
     </CodeGroup>
   </Col>
 </Row>
+
+---
+<Heading
+  url='/message-annotations'
+  method='post'
+  title='获取应用批注列表（FAQ）'
+  name='#message-annotations'
+/>
+<Row>
+  <Col>
+  用于获取应用批注信息列表(建议采用time，按天获取)
+  ### Query
+    <Properties>
+      <Property name='id' type='string' key=' string'>
+        （选填） 批注编号
+      </Property>
+      <Property name='question' type='string' key='question'>
+        （选填）问题
+      </Property>
+      <Property name='time' type='string' key='time'>
+        （选填）时间,格式为 YYYY-MM-DD, 有值查询对应时间新增/更新的批注，不填则查询所有批注（建议按天查询）
+      </Property>
+      <Property name='user' type='string' key='user'>
+         （必填）用户标识，任意标识，无可直接传渠道编号
+      </Property>
+    </Properties>
+  ### Response
+  - `result` (string) 固定返回 success
+  - `data` (array[object]) 会话列表
+    - `id` (string) 批注编号
+    - `question` (string) 问题
+    - `answer` (string) 回答消息内容
+    - `hit_count` (int) 命中次数
+    - `created_at` (timestamp)创建时间戳
+    - `updated_at` (timestamp) 修改时间戳
+  </Col>
+  <Col>
+  <CodeGroup title="Request" tag="POST" label="/message-annotations" targetCode={`curl -X GET '${props.appDetail.api_base_url}/message-annotations?time=2025-03-04&user=test' \\\n-H 'Authorization: Bearer {api_key}'`}>
+    ```bash {{ title: 'cURL' }}
+    curl -X GET '${props.appDetail.api_base_url}/message-annotations' \
+    -H 'Authorization: Bearer {api_key}'
+    ```
+   </CodeGroup>
+
+    <CodeGroup title="Response">
+    ```json {{ title: 'Response' }}
+    {
+	"result": "success",
+	"data": [
+		{
+			"id": "c81bd251-3f28-4e77-ab77-90ab2b635fa4",
+			"question": "人工服务",
+			"answer": "服务升级",
+			"hit_count": 7,
+			"created_at": 1741074780,
+			"updated_at": 1741074780
+		},
+		{
+			"id": "6e845cf0-a62f-4ba1-85d0-1ebcb8b72a82",
+			"question": "转人工",
+			"answer": "服务升级",
+			"hit_count": 3,
+			"created_at": 1741074766,
+			"updated_at": 1741074766
+		},
+		{
+			"id": "0f76f92f-28af-4f11-9e11-a337378e8941",
+			"question": "你是谁",
+			"answer": "你好，我是智能问答助手，你有什么问题可以随时咨询我哦。",
+			"hit_count": 3,
+			"created_at": 1741070542,
+			"updated_at": 1741070542
+		}
+	]
+    }
+    ```
+    </CodeGroup>
+  </Col>
+</Row>

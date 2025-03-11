@@ -4,7 +4,7 @@ from typing import cast, Union
 
 import pandas as pd
 from flask_login import current_user  # type: ignore
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import NotFound
 
@@ -446,12 +446,12 @@ class AppAnnotationService:
 
     # 根据 appid 查询对应批注不分页
     @classmethod
-    def get_annotation_list_all_by_app_id(cls,  user: Union[Account, EndUser], app_id: str, question: str = None, time: str = None,
+    def get_annotation_list_all_by_app_id(cls,  tenant_id: str, app_id: str, question: str = None, time: str = None,
                                           annotation_id: str = None):
         # 获取应用信息
         app = (
             db.session.query(App)
-            .filter(App.id == app_id, App.tenant_id == user.current_tenant_id, App.status == "normal")
+            .filter(App.id == app_id, App.tenant_id == tenant_id, App.status == "normal")
             .first()
         )
         if not app:
@@ -460,7 +460,7 @@ class AppAnnotationService:
         # 构建查询条件
         filters = [MessageAnnotation.app_id == app_id]
 
-        if id:
+        if annotation_id:
             filters.append(MessageAnnotation.id == annotation_id)
 
         if question:
@@ -468,14 +468,17 @@ class AppAnnotationService:
 
         if time:
             try:
-                date_obj = datetime.strptime(time, "%Y-%m-%d").date()
+                date_obj = datetime.datetime.strptime(time, "%Y-%m-%d").date()
                 filters.append(or_(
-                    db.func.date(MessageAnnotation.create_time) == date_obj,
-                    db.func.date(MessageAnnotation.update_time) == date_obj
+                    db.func.date(MessageAnnotation.created_at) == date_obj,
+                    db.func.date(MessageAnnotation.updated_at) == date_obj
                 ))
             except ValueError:
                 raise ValueError("Invalid date format. Expected YYYY-MM-DD")
-
-        annotations = MessageAnnotation.query.filter(and_(*filters))
-
-        return annotations.all()
+        annotations = (
+            db.session.query(MessageAnnotation)
+            .filter(and_(*filters))
+            .order_by(MessageAnnotation.created_at.desc())
+            .all()
+        )
+        return annotations
